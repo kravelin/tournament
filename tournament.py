@@ -61,8 +61,6 @@ def registerPlayer(name):
     cursor.execute(query,(name,))
     result = cursor.fetchone()
     player_id = result[0]
-    print(result)
-    print(player_id)
     query = "INSERT INTO currentgame(ID) VALUES (%s)"
     cursor.execute(query,(player_id,))
     db.commit()
