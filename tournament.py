@@ -13,7 +13,11 @@ def deleteMatches():
     """Remove all the match records from the database."""
     db = connect()
     cursor = db.cursor()
+    query = "DELETE FROM matchups"
+    cursor.execute(query)
     query = "DELETE FROM matches"
+    cursor.execute(query)
+    query = "UPDATE currentgame SET matches = 0, wins = 0"
     cursor.execute(query)
     db.commit()
     db.close()
@@ -22,8 +26,6 @@ def deletePlayers():
     """Remove all the player records from the database."""
     db = connect()
     cursor = db.cursor()
-    query = "DELETE FROM matchups"
-    cursor.execute(query)
     query = "DELETE FROM currentgame"
     cursor.execute(query)
     db.commit()
@@ -98,7 +100,34 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
- 
+    db = connect()
+    cursor = db.cursor()
+    
+    query = "INSERT INTO matches(player1,player2,winnerID) VALUES (%s, %s, %s)"
+    cursor.execute(query,(winner,loser,winner))
+    
+    query = "INSERT INTO matchups(player1,player2) VALUES (%s, %s)"
+    cursor.execute(query,(winner,loser))
+    
+    query = "SELECT wins, matches FROM currentgame WHERE ID = (%s)"
+    cursor.execute(query,(winner,))
+    result = cursor.fetchone()
+    winnerwins = result[0] + 1
+    winnermatches = result[1] + 1
+    
+    query = "UPDATE currentgame SET wins = %s, matches = %s WHERE ID = (%s)"
+    cursor.execute(query,(winnerwins, winnermatches, winner))
+    
+    query = "SELECT matches FROM currentgame WHERE ID = (%s)"
+    cursor.execute(query,(loser,))
+    result = cursor.fetchone()
+    losermatches = result[0] + 1
+    
+    query = "UPDATE currentgame SET matches = %s WHERE ID = (%s)"
+    cursor.execute(query,(losermatches,loser))
+    
+    db.commit()
+    db.close() 
  
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
