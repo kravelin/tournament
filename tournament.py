@@ -38,16 +38,29 @@ def countPlayers():
     db.close()
     return players
     
-def registerPlayer(name):
+def registerPlayer(fname, lname):
     """Adds a player to the tournament database.
   
     The database assigns a unique serial id number for the player.  (This
     should be handled by your SQL database schema, not in your Python code.)
   
     Args:
-      name: the player's full name (need not be unique).
+      fname: the player's first name (need not be unique).
+      lname: the player's last name (need not be unique).
     """
-
+    db = connect()
+    cursor = db.cursor()
+    answer = raw_input("Is this an existing player? [yN]")
+    if lower(answer) != "y":
+    	query = "INSERT INTO players(firstName, lastName) VALUES (%s, %s)"
+    	db.execute(query,firstname, lastname)
+    query = "SELECT ID FROM players WHERE firstName = %s AND lastName = %s"
+    db.execute(query, firstName, lastName)
+    result = cursor.fetchone()
+    player_id = result[0]
+    
+    query = "INSERT INTO currentgame(ID) VALUES (%s)"
+    db.execute(query, player_id)
 
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
