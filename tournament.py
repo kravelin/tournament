@@ -7,7 +7,7 @@ import psycopg2
 
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
-    return psycopg2.connect("dbname=tournament")
+    return psycopg2.connect("dbname='tournament'")
 
 def deleteMatches():
     """Remove all the match records from the database."""
@@ -15,6 +15,7 @@ def deleteMatches():
     cursor = db.cursor()
     query = "DELETE FROM matches"
     cursor.execute(query)
+    db.commit()
     db.close()
 
 def deletePlayers():
@@ -25,6 +26,7 @@ def deletePlayers():
     cursor.execute(query)
     query = "DELETE FROM currentgame"
     cursor.execute(query)
+    db.commit()
     db.close()
     
 def countPlayers():
@@ -35,6 +37,7 @@ def countPlayers():
     cursor.execute(query)
     result = cursor.fetchone()
     players = result[0]
+    print(players)
     db.close()
     return players
     
@@ -50,16 +53,20 @@ def registerPlayer(name):
     db = connect()
     cursor = db.cursor()
     answer = raw_input("Is this an existing player? [yN]")
-    if lower(answer) != "y":
+    if answer.lower() != "y":
     	query = "INSERT INTO players(name) VALUES (%s)"
-    	db.execute(query,name)
+    	cursor.execute(query,(name,))
+    	db.commit()
     query = "SELECT ID FROM players WHERE name = %s"
-    db.execute(query, name)
+    cursor.execute(query,(name,))
     result = cursor.fetchone()
     player_id = result[0]
-    
+    print(result)
+    print(player_id)
     query = "INSERT INTO currentgame(ID) VALUES (%s)"
-    db.execute(query, player_id)
+    cursor.execute(query,(player_id,))
+    db.commit()
+    db.close()
 
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
