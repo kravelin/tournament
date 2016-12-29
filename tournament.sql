@@ -36,9 +36,11 @@ CREATE TABLE tournaments(
 -- create the table of players for the current tournament and their current wins in rounds
 -- * ID is the player ID and maps to players.ID
 -- * wins is how many rounds they've won, defaults to 0
+-- * matches is how many mathces the player has played, defualts to 0
 CREATE TABLE currentgame(
 	ID int references players(ID) UNIQUE NOT NULL,
 	wins int DEFAULT (0),
+	matches int DEFAULT (0),
 	PRIMARY KEY(ID)
 );
 
