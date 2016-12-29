@@ -12,13 +12,11 @@ CREATE DATABASE tournament;
 
 -- create the the table for each unique player as they join a tournament
 -- * ID is unique and primary key
--- * lastName is the player's last name, doesn't have to be unique, can't be empty
--- * firstName is the player's first name, doesn't have to be unique, can't be empty
+-- * name is the player's full name, doesn't have to be unique, can't be empty
 -- * totalWins is how many tournaments they've won, defaults to 0
 CREATE TABLE players(
 	ID serial,
-	lastName varchar(40) NOT NULL,
-	firstName varchar(40) NOT NULL,
+	name varchar(255) NOT NULL,
 	totalWins int DEFAULT (0),
 	PRIMARY KEY(ID)
 );
