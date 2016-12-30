@@ -44,15 +44,6 @@ CREATE TABLE currentgame(
 	PRIMARY KEY(ID)
 );
 
--- creates table to track matches in the tournament so a player doesn't fight another player more than once
--- * player1 is the ID of one player and maps to currentgame.ID (to ensure they're enrolled in the game)
--- * player2 is the ID of one player and maps to currentgame.ID and make sure they're not playing themselves
-CREATE TABLE matchups(
-	player1 int references currentgame(ID) NOT NULL,
-	player2 int references currentgame(ID) NOT NULL CHECK (player2 != player1),
-	PRIMARY KEY(player1, player2)
-);
-
 -- create table to track the matches in the current tournament
 -- * matchID is the unique ID of the match
 -- * player1 is one of the players in the match, maps to currentgame.ID

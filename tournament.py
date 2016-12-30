@@ -13,8 +13,6 @@ def deleteMatches():
     """Remove all the match records from the database."""
     db = connect()
     cursor = db.cursor()
-    query = "DELETE FROM matchups"
-    cursor.execute(query)
     query = "DELETE FROM matches"
     cursor.execute(query)
     query = "UPDATE currentgame SET matches = 0, wins = 0"
@@ -106,9 +104,6 @@ def reportMatch(winner, loser):
     query = "INSERT INTO matches(player1,player2,winnerID) VALUES (%s, %s, %s)"
     cursor.execute(query,(winner,loser,winner))
     
-    query = "INSERT INTO matchups(player1,player2) VALUES (%s, %s)"
-    cursor.execute(query,(winner,loser))
-    
     query = "SELECT wins, matches FROM currentgame WHERE ID = (%s)"
     cursor.execute(query,(winner,))
     result = cursor.fetchone()
@@ -128,7 +123,7 @@ def reportMatch(winner, loser):
     
     db.commit()
     db.close() 
- 
+ 	
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
   
@@ -144,5 +139,17 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
-
-
+    standings = playerStandings()
+    pairings = []
+    matched = []
+    counter = 1
+    
+    for row in standings:
+    	if row[0] not in matched:
+    		competitor = standings[counter][0]
+    		pairings.append((row[0],row[1],competitor,standings[counter][1]))
+    		matched.append(row[0])
+    		matched.append(competitor)
+    	counter += 1
+    
+    return pairings
