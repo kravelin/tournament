@@ -4,6 +4,9 @@
 #
 
 import psycopg2
+import random
+
+MAXROUNDS = [(2,1),(4,2),(6,3),(8,3),(10,4),(12,4),(14,4),(16,4)]
 
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
@@ -100,7 +103,7 @@ def reportMatch(winner, loser):
     """
     db = connect()
     cursor = db.cursor()
-    
+		    
     query = "INSERT INTO matches(player1,player2,winnerID) VALUES (%s, %s, %s)"
     cursor.execute(query,(winner,loser,winner))
     
@@ -153,3 +156,83 @@ def swissPairings():
     	counter += 1
     
     return pairings
+    
+def runTournament():
+	"""Handles the rounds of a tournament, returns the winner
+	
+	Returns:
+		id: An integer which contains the ID of the winner
+		name: name of the winner
+		wins: number of wins
+		matches: number of matches
+	"""
+	rounds = 1
+	db = connect()
+	cursor = db.cursor()
+	playercount = countPlayers()
+	match = 1
+	
+	for row in MAXROUNDS:
+		if playercount == row[0]:
+			rounds = row[1]
+			break
+	
+	counter = 0
+	while counter < rounds:
+		pairings = swissPairings()
+		for row in pairings:
+			winner = random.randint(1, 2)
+			if winner == 1:
+				loser = 2
+				winner = 0
+			else:
+				loser = 0
+				winner = 2
+			reportMatch(row[winner],row[loser])
+			print("Match " + str(match) + " winner: " + row[winner + 1] + ". Loser: " + row[loser + 1])
+			match += 1
+		counter += 1
+	
+	finalresults = playerStandings()
+	winner = finalresults[0]
+	return winner
+	
+def setupTournament():
+	"""Handles setting up a new tournament and registering the players for it
+	
+	Assumes an even number of players will be entered but doesn't check for it.
+	"""
+	db = connect()
+	cursor = db.cursor()
+	
+	while raw_input("Do you want to register a player in the tournament? (type a lowercase 'y' to do so) ") == "y":
+		name = raw_input("What is the player's name? ")
+		registerPlayer(name)
+	
+	raw_input("\nGetting ready to start the tournament. Press 'Enter' to begin.")
+	winner = runTournament()
+	
+	print("\nThe winner is " + winner[1] + " with an ID of " + str(winner[0]) + " who won " + str(winner[2]) + " out of " + str(winner[2]) + " matches.")
+	standings = playerStandings()
+	counter = 0
+	print("\nFinal Results:")
+	print("------------------------------------------")
+	for row in standings:
+		print(row[1] + ", ID: " + str(row[0]) + ", won " + str(row[2]) + " of " + str(row[3]) + " matches")
+	
+	query = "INSERT INTO tournaments(winnerID) VALUES (%s) RETURNING tournamentID"
+	cursor.execute(query,(winner[0],))
+	result = cursor.fetchall()
+	tournamentID = result[0][0]
+	db.commit()
+	print("\nResults of tournament with ID " + str(tournamentID) + " have been recorded.")
+	
+	deleteMatches()
+	deletePlayers()
+	db.close()
+
+setupTournament()
+while raw_input("\nWould you like to run another tournament?(enter a lowercase 'y' to do so) ") == "y":
+	setupTournament()
+	
+print("\nThank you for using the Tournament software, have a good day.")

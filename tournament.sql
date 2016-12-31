@@ -28,7 +28,7 @@ CREATE TABLE players(
 -- initial insert will just populate the tournaentID field, later updated with winnerID and timestamp
 CREATE TABLE tournaments(
 	tournamentID serial,
-	t_timestamp timestamp,
+	t_timestamp timestamptz DEFAULT now(),
 	winnerID int references players(ID),
 	PRIMARY KEY(tournamentID)
 );
